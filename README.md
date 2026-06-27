@@ -21,29 +21,26 @@ Endpoint | Accepts (JSON Payload) | Returns (JSON Response)
 &nbsp;
 ### Architecture Diagram
 ---
+Flow 1: Submission Flow
 ```mermaid
-flowchart LR
-    subgraph Submission_Flow [Submission Flow]
-        direction TB
-        A[POST /submit] --> Raw_Text1(Raw Text)
-        Raw_Text1 --> B(Stylometric Heuristics)
-        Raw_Text1 --> C(GROQ LLM)
-        B --> D(Scoring Engine)
-        C --> D
-        D --> E(Label Mapping)
-        E --> F(Audit Log)
-        F --> G[User View]
-    end
+graph TD
+    %% Flow 1: Submission Flow
+    A[POST /submit] -->|&nbsp;Raw Text&nbsp;| B(Signal 1: Stylometric Heuristics Engine)
+    A --> |&nbsp;Raw Text&nbsp;| C(Signal 2: GROQ LLM)
+    B --> |&nbsp;Signal Score&nbsp;| D(Scoring Engine)
+    C --> |&nbsp;Signal Score&nbsp;| D
+    D --> |&nbsp;Combined Score&nbsp;| E(Label Mapping)
+    E --> |&nbsp;Transparency Label&nbsp;| F(Audit Log)
+    F --> |&nbsp;JSON Response&nbsp;| G[User View]
+```
 
-    subgraph Appeal_Flow [Appeal Flow]
-        direction TB
-        H[POST /appeal] --> I(Update Status: under_review)
-        I --> J(Audit Log)
-        J --> K[User View]
-    end
-
-    %% Invisible link to force side-by-side alignment
-    Submission_Flow ~~~ Appeal_Flow
+Flow 2: Appeal Flow
+```mermaid
+graph TD
+    %% Flow 2: Appeal Flow
+    H[POST /appeal] -->|&nbsp;Content ID + Reason&nbsp;| I(Update Status to 'under_review')
+    I -->|&nbsp;Log Appeal Data&nbsp;| J(Audit Log)
+    J -->|&nbsp;JSON Response&nbsp;| K[User View]
 ```
 
 &nbsp;
