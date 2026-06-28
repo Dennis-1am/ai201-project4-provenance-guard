@@ -3,5 +3,5 @@ GET_RECENT_LOGS = '''
     FROM logs l
     JOIN content_labels cl ON l.content_id = cl.content_id
     ORDER BY l.timestamp DESC
-    LIMIT 3
+    LIMIT 4
 '''

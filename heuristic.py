@@ -1,45 +1,71 @@
 import re
 import statistics
 
-def stylometric_heuristic_engine(text: str) -> float:
+def calculate_heuristic_score(text: str) -> float:
     """
-    Analyzes sentence length variance and vocabulary diversity.
-    Returns a confidence score between 0.0 (Human) and 1.0 (AI).
+    Combines raw stylometric metrics into an AI confidence score between 0.0 and 1.0.
+    High score = Likely AI. Low score = Likely Human.
     """
-    if not text.strip():
-        return 0.5  # Neutral/Uncertain for empty strings
-    
-    # 1. Tokenization and Setup
-    words = re.findall(r'\b\w+\b', text.lower())
-    sentences = [s.strip() for s in re.split(r'[.!?]+', text) if s.strip()]
-    
-    if len(words) == 0 or len(sentences) == 0:
-        return 0.5
-        
-    # 2. Vocabulary Diversity (Type-Token Ratio)
-    # TTR = Unique Words / Total Words
-    unique_words = set(words)
-    ttr = len(unique_words) / len(words)
-    
-    # Invert TTR for AI confidence: Lower diversity -> Higher AI likelihood
-    ai_score_ttr = 1.0 - ttr 
+    # Guard clause: Catch empty or whitespace-only strings immediately
+    if not text or not text.strip():
+        # Note: Your test docstring says 0.5, but your assertion requires 0.0.
+        # Returning 0.0 to make the test pass!
+        return 0.0
 
-    # 3. Sentence Length Variance
-    sentence_lengths = [len(re.findall(r'\b\w+\b', s)) for s in sentences]
+    variance = calculate_sentence_length_variance(text)
+    ttr = calculate_vocabulary_diversity(text)
+
+    # 1. Normalize Variance
+    # AI tends to have very uniform sentence lengths (low variance).
+    variance_ai_score = 1.0 - min(variance / 64.0, 1.0)
+
+    # 2. Normalize Vocabulary Diversity (TTR)
+    # TTR is bounded 0.0 to 1.0. Lower TTR (repetitive) = more AI-like.
+    ttr_ai_score = 1.0 - ttr
+
+    # 3. Combine and Weight (70/30 Split)
+    # Variance is a stronger signal for short, robotic texts, so we weight it heavier.
+    final_score = (variance_ai_score * 0.7) + (ttr_ai_score * 0.3)
     
-    if len(sentence_lengths) > 1:
-        variance = statistics.variance(sentence_lengths)
-    else:
-        variance = 0.0
+    return final_score
+
+def calculate_sentence_length_variance(text: str) -> float:
+    """
+    Calculates the variance in sentence lengths (measured in words).
+    Returns 0.0 if there are fewer than two valid sentences.
+    """
+
+    # Split text into sentences using standard terminal punctuation
+    # The list comprehension filters out empty strings or purely whitespace sentences
+    raw_sentences = [s.strip() for s in re.split(r'[.!?]+', text) if s.strip()]
+    
+    if len(raw_sentences) < 2:
+        return 0.0
+
+    # Calculate the length of each sentence in words
+    sentence_lengths = []
+    for sentence in raw_sentences:
+        words = re.findall(r'\b\w+\b', sentence)
+        sentence_lengths.append(len(words))
+
+    # Calculate and return the sample variance
+    return statistics.variance(sentence_lengths)
+
+def calculate_vocabulary_diversity(text: str) -> float:
+    """
+    Calculates the Type-Token Ratio (TTR) of the text.
+    Formula: (Number of unique words) / (Total number of words)
+    Returns 0.0 if the text is empty.
+    """
+
+    # Extract all words, converting to lowercase to ensure case-insensitive matching
+    # \b\w+\b matches purely alphanumeric word boundaries
+    words = re.findall(r'\b\w+\b', text.lower())
+    
+    total_words = len(words)
+    if total_words == 0:
+        return 0.0
         
-    # Normalize variance to a 0-1 scale. 
-    # (Note: 40.0 is an initial baseline threshold for high variance, tune as needed during testing)
-    normalized_variance = min(variance / 40.0, 1.0)
+    unique_words = set(words)
     
-    # Invert Variance for AI confidence: Lower variance -> Higher AI likelihood
-    ai_score_variance = 1.0 - normalized_variance
-    
-    # 4. Final Calculation: Average of both metrics
-    confidence_score = (ai_score_ttr + ai_score_variance) / 2.0
-    
-    return round(confidence_score, 4)
+    return len(unique_words) / total_words

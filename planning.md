@@ -55,8 +55,8 @@ I will map raw signal outputs to a calibrated score by using a 3 threshold scori
 
 | Score Range | Internal Status | Example Transparency Label Text |
 | :--- | :--- | :--- |
-| **0.85 – 1.00** | High-Confidence AI | 🤖 *Automated System Verdict:* "Highly likely to be AI-generated." |
-| **0.40 – 0.84** | Uncertain / Review | ⚠️ *Uncertain:* "Mixed signals detected. This content is under review." |
+| **0.7 – 1.00** | High-Confidence AI | 🤖 *Automated System Verdict:* "Highly likely to be AI-generated." |
+| **0.40 – 0.7** | Uncertain / Review | ⚠️ *Uncertain:* "Mixed signals detected. This content is under review." |
 | **0.00 – 0.39** | High-Confidence Human | ✍️ *Verified Style:* "Highly likely to be original human writing." |
 
 So a confidence score of 0.6 will be labeled as Uncertain / Review.
