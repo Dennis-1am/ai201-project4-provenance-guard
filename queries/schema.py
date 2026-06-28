@@ -13,7 +13,7 @@ CREATE_LABELS_TABLE = '''
         confidence_score REAL,
         label TEXT,
         status TEXT,
-        appeal_text TEXT,
+        appeal_reasoning TEXT,
         FOREIGN KEY (content_id) REFERENCES content (content_id)
     )
 '''
@@ -26,6 +26,8 @@ CREATE_LOGS_TABLE = '''
         heuristic_score REAL,
         groq_score REAL,
         final_score REAL,
+        status TEXT,
+        appeal_reasoning TEXT,
         action_taken TEXT,
         FOREIGN KEY (content_id) REFERENCES content (content_id)
     )
