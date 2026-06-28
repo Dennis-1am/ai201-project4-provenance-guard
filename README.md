@@ -58,3 +58,79 @@ graph TD
 * **Why it differs:** It acts as a holistic evaluator, identifying complex, high-level structural artifacts, overused transitions, and predictable semantic pacing common to LLM outputs.
 * **Blind Spots:** It struggles with precise statistical breakdowns. It cannot accurately calculate exact numerical variances on the fly and can easily be fooled by lightly edited AI content or unusually rigid, template-driven human writing.
 * **Output:** A confidence score between 0 - 1
+
+&nbsp;
+### Rate Limiting
+
+* Run this code in terminal to test the rate limit
+```
+for i in $(seq 1 12); do
+  curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:5000/submit \
+    -H "Content-Type: application/json" \
+    -d '{"text": "This is a test submission for rate limit testing purposes only.", "creator_id": "ratelimit-test"}'
+done
+```
+
+* Should expect this output
+```
+200
+200
+200
+200
+200
+200
+200
+200
+200
+200
+429
+429
+```
+
+## Log Entries
+
+```json
+{
+    "entries": [
+        {
+            "appeal_reasoning": null,
+            "content_id": "eeb009f2-a360-47b1-affd-df491c9b9f71",
+            "creator_id": "test-user-ai-1",
+            "label": "\ud83e\udd16 *Automated System Verdict:* \"Highly likely to be AI-generated.\"",
+            "scores": {
+                "final": 0.717498183139535,
+                "groq_llm": 0.8,
+                "heuristic": 0.24998788759689916
+            },
+            "status": "High-Confidence AI",
+            "timestamp": "2026-06-28T19:19:41.396377+00:00"
+        },
+        {
+            "appeal_reasoning": "I believe my submission was incorrectly flagged as AI-generated. I would like to request a review of",
+            "content_id": "ff0f3df6-a975-431e-a7a6-121771e28d1d",
+            "creator_id": "test-user-me",
+            "label": "\u26a0\ufe0f *Uncertain:* \"Mixed signals detected. This content is under review.\"",
+            "scores": {
+                "final": 0.5450121268656717,
+                "groq_llm": 0.6,
+                "heuristic": 0.2334141791044776
+            },
+            "status": "Under Review",
+            "timestamp": "2026-06-28T19:05:43.049348+00:00"
+        },
+        {
+            "appeal_reasoning": null,
+            "content_id": "ff0f3df6-a975-431e-a7a6-121771e28d1d",
+            "creator_id": "test-user-me",
+            "label": "\u26a0\ufe0f *Uncertain:* \"Mixed signals detected. This content is under review.\"",
+            "scores": {
+                "final": 0.5450121268656717,
+                "groq_llm": 0.6,
+                "heuristic": 0.2334141791044776
+            },
+            "status": "Uncertain",
+            "timestamp": "2026-06-28T19:04:35.132733+00:00"
+        }
+    ]
+}
+```

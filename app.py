@@ -18,6 +18,14 @@ from scoring_engine import score_text, get_status_label
 
 app = Flask(__name__)
 
+## Set up rate limiting
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri="memory://",
+)
+
 # Updated Database Name
 DB_NAME = "provenance_guard.db"
 
@@ -46,6 +54,7 @@ def get_db_connection():
 # ROUTES
 # ---------------------------------------------------------
 @app.route('/submit', methods=['POST'])
+@limiter.limit("10 per minute;100 per day")
 def submit_endpoint():
     data = request.get_json()
     
