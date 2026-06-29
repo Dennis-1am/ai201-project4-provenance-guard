@@ -59,6 +59,16 @@ graph TD
 * **Blind Spots:** It struggles with precise statistical breakdowns. It cannot accurately calculate exact numerical variances on the fly and can easily be fooled by lightly edited AI content or unusually rigid, template-driven human writing.
 * **Output:** A confidence score between 0 - 1
 
+* Note: If I were to deploy this into the real world I would add even more signals and thourghly test the signal and llm outputs. I would I also run each signal through a pipeline that would call the LLM last. This way is the average score in each signal detection step is over 0.7 we just label the text as High Confidence AI and can skip the llm step which is expensive.
+
+&nbsp;
+### Labels
+| Score Range | Internal Status | Example Transparency Label Text |
+| :--- | :--- | :--- |
+| **0.7 – 1.00** | High-Confidence AI | 🤖 *Automated System Verdict:* "Highly likely to be AI-generated." |
+| **0.40 – 0.7** | Uncertain / Review | ⚠️ *Uncertain:* "Mixed signals detected. This content is under review." |
+| **0.00 – 0.39** | High-Confidence Human | ✍️ *Verified Style:* "Highly likely to be original human writing." |
+
 &nbsp;
 ### Rate Limiting
 
@@ -87,7 +97,7 @@ done
 429
 ```
 
-## Log Entries
+## Log Entries / Confidence Scoring
 
 ```json
 {
@@ -134,3 +144,21 @@ done
     ]
 }
 ```
+
+&nbsp;
+### Limitations
+
+The current heuristic approach lacks a holistic view. To improve accuracy, we should incorporate additional signals beyond just sentence length and type-to-token ratio. Content that is both short and repetitive is currently labeled as "uncertain" because its low sentence-length variation and type-to-token ratio force us to rely too heavily on the model to make correct assumptions.
+
+&nbsp;
+### Spec Review
+
+The spec provided a solid baseline and helped me establish the framework quickly. However, I did need to modify the logging structure: I added a `status` field to the logs so that they can be read as a timeline, rather than inferring the status directly from the `content_label`.
+
+&nbsp;
+### AI Usage
+
+I did not use Claude Code for this project; instead, I used Gemini to assist with the coding, which allowed me to make significant progress. It helped hook up the config files so that I can organize the code base better.
+
+To manage my context window, I utilized two separate Google accounts. This allowed me to save the conversation from one instance, pass the history to the next, and continue working seamlessly between them. Gemini was also instrumental in producing the Mermaid diagram, which I refined by adding intermediate steps to better visualize the output and the current state of the raw text.
+
